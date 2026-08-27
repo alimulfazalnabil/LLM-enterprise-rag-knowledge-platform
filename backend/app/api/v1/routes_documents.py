@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from app.auth.deps import require_documents_delete, require_documents_read, require_documents_write
+from app.auth.deps import (
+    require_documents_delete,
+    require_documents_read,
+    require_documents_write,
+)
 from app.documents.repository import (
     IngestionStatus,
     create_document_for_tenant,

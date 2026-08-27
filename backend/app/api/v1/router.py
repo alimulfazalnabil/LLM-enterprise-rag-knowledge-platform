@@ -1,6 +1,15 @@
 from fastapi import APIRouter
 
-from app.api.v1 import admin, auth, chat, documents, evaluation, routes_health, routes_metrics, search
+from app.api.v1 import (
+    admin,
+    auth,
+    chat,
+    documents,
+    evaluation,
+    routes_health,
+    routes_metrics,
+    search,
+)
 
 api_router = APIRouter()
 api_router.include_router(routes_health.router, tags=['health'])

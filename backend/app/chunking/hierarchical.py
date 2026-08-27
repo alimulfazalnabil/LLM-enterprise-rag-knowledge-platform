@@ -12,12 +12,10 @@ class HierarchicalChunker:
     def chunk_document(self, text: str, metadata: dict[str, Any]) -> list[dict[str, Any]]:
         words = text.split()
         chunks: list[dict[str, Any]] = []
-        parent_index = 0
-
         step_parent = max(1, self.parent_size - self.overlap)
         step_child = max(1, self.child_size - self.overlap)
 
-        for i in range(0, len(words), step_parent):
+        for parent_index, i in enumerate(range(0, len(words), step_parent)):
             parent_text = ' '.join(words[i:i + self.parent_size])
             parent_id = f'parent_{parent_index}'
 
@@ -33,6 +31,4 @@ class HierarchicalChunker:
                     'chunk_index': len(chunks),
                     **metadata,
                 })
-            parent_index += 1
-
         return chunks

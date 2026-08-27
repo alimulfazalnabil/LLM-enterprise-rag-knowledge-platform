@@ -1,6 +1,6 @@
+from app.citations.verification import Citation, verify_citations
 from app.retrieval.schemas import RetrievalResult
 from app.retrieval.tenant_filter import authorize_results
-from app.citations.verification import Citation, verify_citations
 
 
 def test_authorize_results_filters_cross_tenant_records() -> None:

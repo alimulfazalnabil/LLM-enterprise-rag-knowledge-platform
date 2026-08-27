@@ -8,7 +8,7 @@ class CitationVerifier:
     @staticmethod
     def verify_citations(answer: str, retrieved_chunks: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]], float]:
         matches = re.findall(r'\[(\d+)\]', answer)
-        ref_indices = set(int(m) for m in matches)
+        ref_indices = {int(m) for m in matches}
         valid_citations: list[dict[str, Any]] = []
         unsupported = 0
 

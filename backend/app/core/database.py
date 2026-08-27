@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+
 from sqlalchemy import BigInteger, Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine

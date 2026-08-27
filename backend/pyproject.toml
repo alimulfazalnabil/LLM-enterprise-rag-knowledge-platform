@@ -23,3 +23,6 @@ pythonpath = ["."]
 
 [tool.setuptools.packages.find]
 include = ["app*"]
+
+[tool.ruff.lint]
+ignore = ["B008"]
