@@ -1,0 +1,20 @@
+[
+  {
+    "question": "What is the remote work policy?",
+    "expected_answer": "Employees may work remotely per policy constraints.",
+    "relevant_document": "Remote Work Policy",
+    "relevant_chunk": "chunk_12",
+    "difficulty": "easy",
+    "category": "policy",
+    "synthetic": true
+  },
+  {
+    "question": "How long must security logs be retained?",
+    "expected_answer": "Security logs must be retained per InfoSec policy period.",
+    "relevant_document": "Information Security Policy",
+    "relevant_chunk": "chunk_21",
+    "difficulty": "medium",
+    "category": "security",
+    "synthetic": true
+  }
+]
