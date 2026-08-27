@@ -1,0 +1,1 @@
+Rewrite query for retrieval while preserving original semantic meaning.

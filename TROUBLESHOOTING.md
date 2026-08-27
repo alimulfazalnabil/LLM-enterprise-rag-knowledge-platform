@@ -1,0 +1,3 @@
+# TROUBLESHOOTING
+
+See docs/TROUBLESHOOTING.md for details.

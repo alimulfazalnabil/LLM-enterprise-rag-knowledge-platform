@@ -1,0 +1,7 @@
+services:
+  backend:
+    image: enterprise-rag-backend:latest
+  worker:
+    image: enterprise-rag-worker:latest
+  frontend:
+    image: enterprise-rag-frontend:latest

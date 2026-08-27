@@ -1,0 +1,1 @@
+Validate each citation against retrieved chunk metadata and tenant scope.

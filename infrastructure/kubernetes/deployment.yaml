@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: enterprise-rag-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: enterprise-rag-backend
+  template:
+    metadata:
+      labels:
+        app: enterprise-rag-backend
+    spec:
+      containers:
+        - name: backend
+          image: enterprise-rag-backend:latest
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health/ready
+              port: 8000
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health/live
+              port: 8000
