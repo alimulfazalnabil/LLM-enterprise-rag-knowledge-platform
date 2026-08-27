@@ -1,0 +1,6 @@
+from typing import Protocol
+
+
+class DocumentStorage(Protocol):
+    def put(self, tenant_id: str, document_id: str, content: bytes, filename: str) -> str: ...
+    def get(self, uri: str) -> bytes: ...

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+.env
+node_modules/
+dist/
+coverage.xml
+htmlcov/
+.terraform/
+*.tfstate
+*.tfstate.backup
+backend/.mypy_cache/
+*.egg-info/
