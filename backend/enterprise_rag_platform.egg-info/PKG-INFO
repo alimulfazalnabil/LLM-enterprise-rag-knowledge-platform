@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: enterprise-rag-platform
+Version: 0.1.0
+Summary: Production-oriented multi-tenant RAG reference platform
+Requires-Python: >=3.12
+Requires-Dist: fastapi>=0.115
+Requires-Dist: uvicorn[standard]>=0.30
+Requires-Dist: pydantic-settings>=2.6
+Requires-Dist: python-multipart>=0.0.9
+Requires-Dist: sqlalchemy>=2.0.34
+Requires-Dist: alembic>=1.14.0
+Provides-Extra: test
+Requires-Dist: pytest>=8.3; extra == "test"
+Requires-Dist: httpx>=0.27; extra == "test"
