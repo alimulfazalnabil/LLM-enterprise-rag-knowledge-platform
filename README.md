@@ -35,7 +35,7 @@ The project focuses on engineering challenges beyond a basic document-chat demo:
 
 The architecture below reflects the components described in this repository. It is an architectural view, not a deployment topology or performance benchmark.
 
-![RAG architecture](docs/architecture.svg)
+![RAG architecture](https://raw.githubusercontent.com/alimulfazalnabil/LLM-enterprise-rag-knowledge-platform/main/docs/architecture.svg)
 
 ~~~mermaid
 flowchart TB
