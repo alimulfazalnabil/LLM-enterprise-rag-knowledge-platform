@@ -1,77 +1,174 @@
 # Enterprise RAG Knowledge Platform
 
-[![CI/CD Quality Gates](https://github.com/enterprise-rag-knowledge-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/enterprise-rag-knowledge-platform/actions)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-005571?logo=fastapi)](https://fastapi.tiangolo.com/)
-[![PostgreSQL + pgvector](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
-[![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?logo=docker&logoColor=white)](https://www.docker.com/)
-[![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?logo=terraform&logoColor=white)](https://www.terraform.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+
+### Secure, multi-tenant knowledge retrieval with grounded LLM responses
+
+![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1?logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-Cache%20%26%20Broker-DC382D?logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerised-2496ED?logo=docker&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-844FBA?logo=terraform&logoColor=white)
+
+**Engineering focus:** Retrieval quality · Tenant isolation · Citation verification · API services · Deployment foundations
+
+</div>
 
 ---
 
-## Executive Summary
+## 01 — Project overview
 
-The **Enterprise RAG Knowledge Platform** is a production-grade, multi-tenant Retrieval-Augmented Generation (RAG) system engineered for secure enterprise deployments. It solves the critical institutional knowledge fragmentation problem faced by large organizations where crucial operational guidelines, technical manuals, HR policies, and compliance standards are locked across unstructured repositories (PDF, DOCX, Markdown, TXT).
+The **Enterprise RAG Knowledge Platform** is a reference implementation of a multi-tenant Retrieval-Augmented Generation system for querying organisational knowledge stored in unstructured documents such as PDF, DOCX, Markdown and TXT.
 
-Unlike basic chatbot demos or naive vector search wrappers, this platform implements a rigorous engineering pipeline combining **Hybrid Retrieval (Dense `pgvector` + Sparse BM25)**, **Reciprocal Rank Fusion (RRF)**, **Cross-Encoder Reranking**, **Contextual Compression**, **Hierarchical Chunking**, **Deterministic Citation Verification**, and **Defense-in-Depth Tenant-Scoped RBAC**.
+The project focuses on engineering challenges beyond a basic document-chat demo:
 
----
+- Combining semantic retrieval with exact-term search.
+- Improving candidate relevance through rank fusion and reranking.
+- Preserving document context with hierarchical chunking.
+- Returning answers with verifiable source references.
+- Enforcing tenant-scoped access controls across knowledge operations.
 
-## Business Problem
+> **Project status:** This repository documents an engineered platform design and implementation. The architecture is not proof of a production customer deployment, independent security certification, measured retrieval accuracy, or a formal service-level agreement. Validate each capability against the current code and tests.
 
-In enterprise environments, employees waste hundreds of hours annually searching fragmented internal knowledge bases. Traditional keyword search fails when users describe concepts using synonyms, acronyms, or phrasing different from source documents. Conversely, naive vector search suffers from:
-* **Poor exact-term matching** for product codes, part numbers, and technical identifiers.
-* **Weak handling of domain acronyms** and rare professional terminology.
-* **Retrieval noise**, pulling highly semantic but factually irrelevant passages.
-* **Hallucination risks**, where LLMs synthesize unverified claims when internal knowledge is missing.
+## 02 — System architecture
 
-**The Solution**: An enterprise-ready RAG pipeline that guarantees strict tenant isolation, verified factual grounding, and auditability across all knowledge operations.
+The architecture below reflects the components described in this repository. It is an architectural view, not a deployment topology or performance benchmark.
 
----
+![RAG architecture](docs/architecture.svg)
 
-## System Architecture
-
-```mermaid
+~~~mermaid
 flowchart TB
-    subgraph Client ["Client Layer"]
-        SPA[React + TypeScript SPA Dashboard]
-    end
+    U["User / React + TypeScript UI"] --> API["FastAPI Gateway"]
+    API --> AUTH["JWT / RBAC Middleware"]
+    AUTH --> TENANT["Tenant Scope Enforcement"]
+    TENANT --> ING["Async Ingestion"]
+    TENANT --> RET["Hybrid Retrieval"]
+    TENANT --> GEN["Grounded Generation"]
+    ING --> PARSE["Document Parsing"]
+    PARSE --> CHUNK["Hierarchical Chunking"]
+    CHUNK --> PG[("PostgreSQL + pgvector")]
+    CHUNK --> OBJ[("Blob / Object Storage")]
+    RET --> DENSE["Dense Retrieval"]
+    RET --> SPARSE["BM25 Sparse Retrieval"]
+    DENSE --> FUSION["Reciprocal Rank Fusion"]
+    SPARSE --> FUSION
+    FUSION --> RERANK["Cross-Encoder Reranking"]
+    RERANK --> COMPRESS["Contextual Compression"]
+    COMPRESS --> GEN
+    GEN --> VERIFY["Citation Verification"]
+    VERIFY --> RESP["Grounded Response"]
+    ING --> REDIS[("Redis / Celery Broker")]
+    API --> DB[("PostgreSQL Metadata")]
+~~~
 
-    subgraph Gateway ["API Gateway Layer"]
-        FastAPI[FastAPI Gateway]
-        Auth[JWT & RBAC Middleware]
-        Tenant[Tenant Isolation Enforcer]
-    end
+### Ingestion path
 
-    subgraph Services ["Core Processing & RAG Services"]
-        Ingestion[Asynchronous Ingestion Worker]
-        Retrieval[Hybrid Retrieval Engine]
-        Generation[Grounded Generation & Citation Svc]
-    end
+1. Accept supported document formats.
+2. Parse document content and metadata.
+3. Split content using hierarchical chunking.
+4. Generate dense representations for vector retrieval.
+5. Persist document and retrieval data in configured storage components.
 
-    subgraph Pipeline ["Retrieval & Ranking Pipeline"]
-        Parser[MIME & Document Parser]
-        Chunker[Hierarchical Chunker]
-        VectorStore[(PostgreSQL + pgvector)]
-        BM25[BM25 Sparse Index]
-        RRF[Reciprocal Rank Fusion]
-        Reranker[Cross-Encoder Reranker]
-        Compressor[Contextual Compressor]
-    end
+### Retrieval and generation path
 
-    subgraph Storage ["Persistence Layer"]
-        Postgres[(PostgreSQL Relational DB)]
-        Redis[(Redis Cache & Celery Broker)]
-        Blob[(Blob Storage / Azure Blob)]
-    end
+1. Retrieve candidates through dense and sparse retrieval.
+2. Combine rankings using Reciprocal Rank Fusion (RRF).
+3. Rerank candidates with a cross-encoder.
+4. Compress the context passed to the generation stage.
+5. Generate an answer grounded in retrieved context.
+6. Verify citations against available source references.
 
-    SPA --> FastAPI --> Auth --> Tenant
-    Tenant --> Ingestion & Retrieval & Generation
-    
-    Ingestion --> Parser --> Chunker --> VectorStore & Postgres
-    Ingestion --> Blob
-    
-    Retrieval --> VectorStore & BM25 --> RRF --> Reranker --> Compressor --> Generation
-    Generation --> Postgres
-```
+## 03 — Engineering components
+
+| Component | Responsibility |
+|---|---|
+| FastAPI | HTTP API and service boundary |
+| JWT / RBAC | Authentication and role-based access layer |
+| Tenant enforcement | Tenant-scoped request and data access |
+| PostgreSQL + pgvector | Relational persistence and dense vector search |
+| BM25 | Sparse lexical retrieval |
+| RRF | Fusion of dense and sparse rankings |
+| Cross-encoder | Candidate reranking |
+| Contextual compression | Reduce retrieved context before generation |
+| Redis / Celery | Cache and asynchronous task-broker components |
+| Blob storage | Document object storage integration |
+| Docker / Terraform | Container and infrastructure tooling |
+
+## 04 — Technology stack
+
+- **Application:** Python 3.12+, FastAPI
+- **Retrieval:** pgvector, BM25, Reciprocal Rank Fusion
+- **Ranking:** Cross-encoder reranking, contextual compression
+- **Persistence:** PostgreSQL, Redis
+- **Processing:** Asynchronous ingestion, hierarchical chunking
+- **Platform:** Docker, Terraform
+- **Client:** React and TypeScript, as represented in the architecture
+
+## 05 — Local setup
+
+### Prerequisites
+
+- Python 3.12 or later
+- Docker and Docker Compose, if using the container workflow
+- PostgreSQL with pgvector support
+- Redis, if using asynchronous task and cache components
+- Provider credentials and model configuration appropriate to your environment
+
+~~~bash
+git clone https://github.com/alimulfazalnabil/LLM-enterprise-rag-knowledge-platform.git
+cd LLM-enterprise-rag-knowledge-platform
+
+cp .env.example .env
+# Review and configure .env before starting services.
+
+make help
+~~~
+
+Use the repository Makefile, application configuration and CI workflow as the source of truth for supported commands. Never commit API keys, database passwords or production credentials.
+
+## 06 — Security and reliability considerations
+
+The design calls attention to the following controls; effectiveness depends on implementation and configuration:
+
+- Enforce tenant scope on every document and retrieval query.
+- Apply least-privilege roles to application and database identities.
+- Keep secrets outside Git and rotate credentials.
+- Validate file type, size and parsing behaviour at ingestion boundaries.
+- Treat retrieved document content as untrusted input.
+- Log request identifiers and operational events without exposing sensitive document content.
+- Test citation validity, tenant isolation and retrieval permissions.
+
+## 07 — Evaluation plan
+
+A credible RAG system needs measurable evaluation, not only a successful demo.
+
+| Dimension | Example measurement |
+|---|---|
+| Retrieval relevance | Recall@k, Precision@k, nDCG |
+| Answer grounding | Citation coverage and factual support review |
+| Hallucination control | Unsupported-claim rate on a curated test set |
+| Access control | Cross-tenant negative tests |
+| Performance | p50/p95 latency by pipeline stage |
+| Operations | Error rate, queue depth and resource utilisation |
+
+No benchmark values are claimed here. Add measured results only after running a reproducible evaluation set and documenting its methodology.
+
+## 08 — Roadmap
+
+- [ ] Publish a reproducible evaluation dataset and scoring report.
+- [ ] Add automated tenant-isolation and citation-verification tests.
+- [ ] Document supported model providers and embedding dimensions.
+- [ ] Add service-level observability for ingestion and retrieval stages.
+- [ ] Publish a reproducible local deployment walkthrough.
+- [ ] Add threat modelling for prompt injection and malicious documents.
+
+## Maintainer
+
+**Alimul Fazal Nabil** — AI Solutions Engineer | Cloud & Infrastructure Engineering
+
+[GitHub](https://github.com/alimulfazalnabil) · [LinkedIn](https://www.linkedin.com/in/alimul-fazal-nabil/) · [Portfolio](https://alimulfazalnabil.github.io/)
+
+---
+
+*Technical portfolio project. Architecture descriptions are not a substitute for deployment evidence, independent security review or measured production results.*
